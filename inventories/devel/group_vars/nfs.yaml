@@ -1,0 +1,13 @@
+---
+# NFS
+nfs_exports:
+  [
+    '/var/nfs/general *(rw,sync,no_root_squash,no_subtree_check)',
+    '/var/nfs/nginx *(rw,sync,no_root_squash,no_subtree_check)',
+    '/var/nfs/wordpress *(rw,sync,no_root_squash,no_subtree_check)',
+    '/var/nfs/mysql *(rw,sync,no_root_squash,no_subtree_check)',
+    '/storage/dynamic *(rw,sync,no_root_squash,no_subtree_check)',
+    '/srv/nfs/kubedata *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)',
+  ]
+nfs_rpcbind_state: started
+nfs_rpcbind_enabled: true

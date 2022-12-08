@@ -1,0 +1,24 @@
+---
+- hosts: lb
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Update cache
+      apt:
+        update_cache: yes
+
+    - name: Upgrade all packages on servers
+      apt:
+        name: '*'
+        state: latest
+
+    - name: Installing Prerequisites for Kubernetes
+      apt:
+        name:
+          - ha-proxy
+          - vim
+        state: present
+
+  roles:
+    - robertdebock.fail2ban

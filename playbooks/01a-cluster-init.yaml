@@ -1,0 +1,43 @@
+---
+- hosts: masters
+  become: yes
+  gather_facts: yes
+
+  vars:
+    #Enter the Pod Network CIDR, example: 192.168.100.0/24
+    pod_network_cidr: '192.168.0.0/16'
+    # define the cluster-endpoint-name for the config
+    k8s_cp_endpoint: 'k8s-cluster.dockerlabs.de'
+    # Enter the Pod network manifest file URL, Your choice could be flannel, weave or calico, etc.
+    pod_network_manifest_file: 'https://docs.projectcalico.org/v3.20/manifests/calico.yaml'
+
+  tasks:
+    - name: init the kubernetes master server with config-file
+      shell: 'kubeadm init --config kubeadm-config.yaml'
+
+    - name: Creates .kube directory
+      file:
+        path: /root/.kube
+        state: directory
+
+    - name: Copy /etc/kubernetes/admin.conf
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: yes
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+
+    - name: token creation
+      shell: kubeadm token create --print-join-command
+      register: token
+
+    - debug:
+        var: token.stdout
+
+    - name: saving output
+      local_action: copy content="{{ token.stdout }}" dest="/tmp/kubernetes_join_command"
+
+    - name: config Networking
+      shell: 'kubectl apply -f https://projectcalico.docs.tigera.io/manifests/calico.yaml'
