@@ -1,7 +1,7 @@
 ---
 - hosts: masters,workers,ingress
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
 
   # TODO:
   # - add podman an buildah and crictl
@@ -14,11 +14,11 @@
 
     - name: configure containerd.conf modules to use
       copy:
-        src: 'containerd.conf.tmpl'
-        dest: '/etc/modules-load.d/containerd.conf'
+        src: "containerd.conf.tmpl"
+        dest: "/etc/modules-load.d/containerd.conf"
 
     - name: Apply params without reboot
-      command: '{{ item }}'
+      command: "{{ item }}"
       with_items:
         - modprobe overlay
         - modprobe br_netfilter
@@ -30,11 +30,11 @@
 
     - name: Setup required sysctl params, these persist across reboots.
       copy:
-        src: 'kubernetes.conf.tmpl'
-        dest: '/etc/sysctl.d/kubernetes.conf'
+        src: "kubernetes.conf.tmpl"
+        dest: "/etc/sysctl.d/kubernetes.conf"
 
     - name: Apply sysctl params without reboot
-      command: '{{ item }}'
+      command: "{{ item }}"
       with_items:
         - sysctl --system
 

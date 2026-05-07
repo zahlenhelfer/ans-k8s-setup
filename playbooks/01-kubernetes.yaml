@@ -29,17 +29,17 @@
           - nfs-common
         state: present
 
-    - name: Add Google official GPG key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+    - name: Add Kubernetes apt-key
+      get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+        dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+        mode: "0644"
+        force: true
 
-    - name: Add Kubernetes Repository
+    - name: Add Kubernetes APT repository
       apt_repository:
-        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
         state: present
-        filename: kubernetes
-        mode: 0600
         update_cache: yes
 
     - name: Installing Kubernetes Cluster Packages.
@@ -59,42 +59,42 @@
 
     - name: Letting iptables see bridged traffic - 1
       copy:
-        src: 'k8s.conf.tmpl'
-        dest: '/etc/modules-load.d/k8s.conf'
+        src: "k8s.conf.tmpl"
+        dest: "/etc/modules-load.d/k8s.conf"
 
     - name: Letting iptables see bridged traffic - 2
       copy:
-        src: 'k8s.conf.sysctl.tmpl'
-        dest: '/etc/sysctl.d/k8s.conf'
+        src: "k8s.conf.sysctl.tmpl"
+        dest: "/etc/sysctl.d/k8s.conf"
 
     - name: Apply sysctl params without reboot
-      command: '{{ item }}'
+      command: "{{ item }}"
       with_items:
         - sysctl --system
 
     - name: Copy a prepared kubeadm-config.yaml for kickstart the installation
       when: inventory_hostname in groups['masters']
       copy:
-        src: 'kubeadm-config.yaml.tmpl'
-        dest: '/root/kubeadm-config.yaml'
+        src: "kubeadm-config.yaml.tmpl"
+        dest: "/root/kubeadm-config.yaml"
 
     - name: Copy a prepared calico.yaml for kickstart the CNI-Installation
       when: inventory_hostname in groups['masters']
       copy:
-        src: 'calico.yaml.tmpl'
-        dest: '/root/calico.yaml'
+        src: "calico.yaml.tmpl"
+        dest: "/root/calico.yaml"
 
     - name: Copy a prepared haproxy.yaml for kickstart the Ingress-Installation
       when: inventory_hostname in groups['masters']
       copy:
-        src: 'haproxy.yaml.tmpl'
-        dest: '/root/haproxy.yaml'
+        src: "haproxy.yaml.tmpl"
+        dest: "/root/haproxy.yaml"
 
     - name: Copy a prepared copy-shell
       when: inventory_hostname in groups['masters']
       copy:
-        src: 'copy-kube-config.sh'
-        dest: '/root/copy-kube-config.sh'
+        src: "copy-kube-config.sh"
+        dest: "/root/copy-kube-config.sh"
 
     - name: Reboot the machine (Wait for 1 min)
       reboot:
